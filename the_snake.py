@@ -145,12 +145,20 @@ class Snake(GameObject):
             self.next_direction = None
 
     def add_square(self, x: int, y: int):
-        """Добавляет квадратик к змейке. Используется в методе move()"""
-        list.insert(
-            self.positions,
-            0,
-            (x, y)
-        )
+        """
+        Добавляет квадратик к змейке. Используется в методе move().
+        Описано условие пересечения границ.
+        """
+        if (x >= 0 and x < SCREEN_WIDTH) and (y >= 0 and y < SCREEN_HEIGHT):
+            list.insert(self.positions, 0, (x, y))
+        elif x == - GRID_SIZE:
+            list.insert(self.positions, 0, (SCREEN_WIDTH - GRID_SIZE, y))
+        elif y == - GRID_SIZE:
+            list.insert(self.positions, 0, (x, SCREEN_HEIGHT - GRID_SIZE))
+        elif x == SCREEN_WIDTH:
+            list.insert(self.positions, 0, (0, y))
+        elif y == SCREEN_HEIGHT:
+            list.insert(self.positions, 0, (x, 0))
 
     def move(self):
         """
@@ -160,30 +168,14 @@ class Snake(GameObject):
         противоположной стороны.
         """
         head = self.get_head_position()
-        if head[1] == SCREEN_HEIGHT and self.direction != DOWN:
-            self.add_square(head[0], 0)
-        elif head[0] == SCREEN_WIDTH and self.direction != RIGHT:
-            self.add_square(0, head[1])
-        elif self.direction == RIGHT:
-            if head[0] != SCREEN_WIDTH:
-                self.add_square(head[0] + GRID_SIZE, head[1])
-            else:
-                self.add_square(0, head[1])
+        if self.direction == RIGHT:
+            self.add_square(head[0] + GRID_SIZE, head[1])
         elif self.direction == LEFT:
-            if head[0] != 0:
-                self.add_square(head[0] - GRID_SIZE, head[1])
-            else:
-                self.add_square(SCREEN_WIDTH - GRID_SIZE, head[1])
+            self.add_square(head[0] - GRID_SIZE, head[1])
         elif self.direction == DOWN:
-            if head[1] != SCREEN_HEIGHT:
-                self.add_square(head[0], head[1] + GRID_SIZE)
-            else:
-                self.add_square(head[0], 0)
-        elif self.direction == UP:
-            if head[1] != 0:
-                self.add_square(head[0], head[1] - GRID_SIZE)
-            else:
-                self.add_square(head[0], SCREEN_HEIGHT - GRID_SIZE)
+            self.add_square(head[0], head[1] + GRID_SIZE)
+        else:
+            self.add_square(head[0], head[1] - GRID_SIZE)
         if len(self.positions) > self.length:
             self.last = self.positions[len(self.positions) - 1]
             list.pop(self.positions, len(self.positions) - 1)
