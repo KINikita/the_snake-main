@@ -2,45 +2,35 @@ from random import choice, randint
 
 import pygame
 
-# Константы для размеров поля и сетки:
 SCREEN_WIDTH, SCREEN_HEIGHT = 640, 480
 GRID_SIZE = 20
 GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
 GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
 
-# Направления движения:
+CENTER_OF_SCREEN = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
 UP = (0, -1)
 DOWN = (0, 1)
 LEFT = (-1, 0)
 RIGHT = (1, 0)
 DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
 
-# Цвет фона - черный:
 BOARD_BACKGROUND_COLOR = (0, 0, 0)
 
-# Цвет границы ячейки
 BORDER_COLOR = (93, 216, 228)
 
-# Цвет яблока
 APPLE_COLOR = (255, 0, 0)
 
-# Цвет змейки
 SNAKE_COLOR = (0, 255, 0)
 
-# Скорость движения змейки:
 SPEED = 8
 
-# Настройка игрового окна:
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
 
-# Заголовок окна игрового поля:
 pygame.display.set_caption("Змейка")
 
-# Настройка времени:
 clock = pygame.time.Clock()
 
 
-# Тут опишите все классы игры.
 class GameObject:
     """
     Родительский класс GameObject нужен для
@@ -49,7 +39,7 @@ class GameObject:
 
     def __init__(self) -> None:
         """Конструктор для объектов класса GameObject"""
-        self.position = ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2))
+        self.position = CENTER_OF_SCREEN
         self.body_color = None
 
     def draw(self):
@@ -57,7 +47,7 @@ class GameObject:
         Пустой метод, создан для переиспользования
         в дочерних классах (полиморфизм)
         """
-        pass
+        raise NotImplementedError
 
 
 class Apple(GameObject):
@@ -204,13 +194,12 @@ class Snake(GameObject):
                 self.length = 1
                 list.clear(self.positions)
                 list.append(self.positions,
-                            ((SCREEN_WIDTH // 2), (SCREEN_HEIGHT // 2)))
+                            CENTER_OF_SCREEN)
                 self.direction = choice(DIRECTIONS)
                 screen.fill(BOARD_BACKGROUND_COLOR)
             else:
                 pass
 
-    # Метод draw класса Snake
     def draw(self):
         """
         Отрисовывает змею, затирая последний элемент змеи для
@@ -221,12 +210,10 @@ class Snake(GameObject):
             pygame.draw.rect(screen, self.body_color, rect)
             pygame.draw.rect(screen, BORDER_COLOR, rect, 1)
 
-        # Отрисовка головы змейки
         head_rect = pygame.Rect(self.positions[0], (GRID_SIZE, GRID_SIZE))
         pygame.draw.rect(screen, self.body_color, head_rect)
         pygame.draw.rect(screen, BORDER_COLOR, head_rect, 1)
 
-        # Затирание последнего сегмента
         if self.last:
             last_rect = pygame.Rect(self.last, (GRID_SIZE, GRID_SIZE))
             pygame.draw.rect(screen, BOARD_BACKGROUND_COLOR, last_rect)
@@ -235,7 +222,9 @@ class Snake(GameObject):
 def handle_keys(game_object):
     """Обрабатывает нажатия клавиш с клавиатуры, меняя направление змейки"""
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
+        if (event.type == pygame.QUIT
+                or (event.type == pygame.KEYDOWN
+                    and event.key == pygame.K_ESCAPE)):
             pygame.quit()
             raise SystemExit
         elif event.type == pygame.KEYDOWN:
@@ -254,9 +243,7 @@ def main():
     Основная функция, в которой создается объекты классов Apple и Snake.
     Описана основная логика игры.
     """
-    # Инициализация PyGame:
     pygame.init()
-    # Тут нужно создать экземпляры классов.
     apple = Apple()
     snake = Snake()
 
@@ -269,8 +256,6 @@ def main():
         flag = snake.eat(apple)
         if flag is True:
             apple = Apple()
-        else:
-            pass
         snake.update_direction()
         snake.reset()
         pygame.display.update()
